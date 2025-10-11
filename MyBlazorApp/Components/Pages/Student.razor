@@ -1,0 +1,34 @@
+@page "/student"
+
+
+@inject IStudentService StudentService
+
+<PageTitle>Student Manager</PageTitle>
+<h3>Student List</h3>
+
+@if (students != null)
+{
+    @foreach (var student in students)
+    {
+        <div class="student-item">
+            <p>@student.Name - Grade: @student.Grade</p>
+        </div>
+    }
+}
+else
+{
+    <p>Loading students...</p>
+}
+<button @onclick="LoadStudents" class="btn btn-primary">Load Students</button>
+
+@code {
+    private List<MyBlazorApp.StudentManager.Student> students;
+    protected override void OnInitialized()
+    {
+        students = StudentService.getAllStudents();
+    }
+    private void LoadStudents()
+    {
+        students = StudentService.getAllStudents();
+    }
+}

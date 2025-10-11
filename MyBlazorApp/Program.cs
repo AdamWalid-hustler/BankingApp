@@ -9,6 +9,8 @@ builder.Services.AddRazorComponents()
 //The new code
 builder.Services.AddSingleton<MyBlazorApp.Services.IQuoteService, MyBlazorApp.Services.QuoteService>();
 
+// Student
+builder.Services.AddSingleton<MyBlazorApp.StudentManager.IStudentService, MyBlazorApp.StudentManager.StudentService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -26,16 +26,16 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Walid/BankingApp/Pages/Counter.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
+[C:/Users/Walid/BankingApp/Pages/Accounts.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Walid/BankingApp/Pages/Home.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG9tZS5yYXpvcg==
+[C:/Users/Walid/BankingApp/Pages/History.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSGlzdG9yeS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Walid/BankingApp/Pages/Weather.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcV2VhdGhlci5yYXpvcg==
+[C:/Users/Walid/BankingApp/Pages/NewTransaction.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTmV3VHJhbnNhY3Rpb24ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Walid/BankingApp/_Imports.razor]

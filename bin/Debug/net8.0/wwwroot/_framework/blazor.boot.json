@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "BankingApp",
   "resources": {
-    "hash": "sha256-Pq8g25yQY92SWBLxeYV6Sjqe+rjkIG9vLDa20tAx+6A=",
+    "hash": "sha256-FeO1yNdFy2nur+eeZI9T4L05xshHs2dhKa7rDQ6yFao=",
     "jsModuleNative": {
       "dotnet.native.8.0.19.kxuywye6sa.js": "sha256-O/NCYcAN9uPocD7ns7AzF/cqx7f5vL1PTJCQs0vEXyk="
     },
@@ -208,10 +208,10 @@
       "mscorlib.wasm": "sha256-RLW/7NVuhoPfq151II3kX2kWHgBwQgpCw9aemQNg3to=",
       "netstandard.wasm": "sha256-lAg5WvTiA8wbsIwlr51xh0YWpXT9F5EX3Cnv+11O/mU=",
       "System.Private.CoreLib.wasm": "sha256-3O3muuRQwoLRecYRjfIFWUURvTjP4EmD2O8wYg2UDNY=",
-      "BankingApp.wasm": "sha256-xeD2pixz+jG+dSi2oUeeNUF6mWrmWR1MiXVFqVexM8Y="
+      "BankingApp.wasm": "sha256-+W0a0I1u60567feGdhn0NNoaipj+H65qd9eA7ijooLo="
     },
     "pdb": {
-      "BankingApp.pdb": "sha256-7nKtBfpAj5DQKKCzzDvyGWyBVH/2ZUng8XsJ5iJNBw4="
+      "BankingApp.pdb": "sha256-eZeHV7xbb0CAj9SI+2IKY/cO9svFjwOldhjBBjArQtc="
     }
   },
   "cacheBootResources": true,

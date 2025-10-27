@@ -3,11 +3,14 @@ namespace BankingApp.Models
 {
     public class BankAccount
     {
-        public string AccountNumber { get; set; }
-        public string AccountName { get; set; }
-        public string AccountType { get; set; }
-        public string Valuta { get; set; }
-        public decimal Balance { get; private set; }
+        public string AccountNumber { get; set; } = string.Empty;
+        public string AccountName { get; set; } = string.Empty;
+        public string AccountType { get; set; } = string.Empty;
+        public string Valuta { get; set; } = string.Empty;
+        public decimal Balance { get; set; }
+
+        // Parameterless constructor for JSON deserialization
+        public BankAccount() { }
 
         public BankAccount(string accountNumber, string accountName, string accountType, string valuta, decimal initialBalance = 0)
         {

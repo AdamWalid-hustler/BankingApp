@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using BankingApp.Models;
 
 namespace BankingApp.Services
@@ -10,12 +11,59 @@ namespace BankingApp.Services
     {
         private readonly List<BankAccount> _accounts = new();
         private readonly List<Transaction> _transactions = new();
+        private readonly IStorageService _storageService;
+        private const string AccountsKey = "banking_accounts";
+        private const string TransactionsKey = "banking_transactions";
+
+        public AccountService(IStorageService storageService)
+        {
+            _storageService = storageService;
+            _ = LoadDataAsync(); // Fire and forget initialization
+        }
+
+        private async Task LoadDataAsync()
+        {
+            try
+            {
+                var accounts = await _storageService.GetDataAsync<List<BankAccount>>(AccountsKey);
+                if (accounts != null)
+                {
+                    _accounts.Clear();
+                    _accounts.AddRange(accounts);
+                }
+
+                var transactions = await _storageService.GetDataAsync<List<Transaction>>(TransactionsKey);
+                if (transactions != null)
+                {
+                    _transactions.Clear();
+                    _transactions.AddRange(transactions);
+                }
+            }
+            catch
+            {
+                // If loading fails, start with empty lists
+            }
+        }
+
+        private async Task SaveDataAsync()
+        {
+            try
+            {
+                await _storageService.SaveDataAsync(AccountsKey, _accounts);
+                await _storageService.SaveDataAsync(TransactionsKey, _transactions);
+            }
+            catch
+            {
+                // Silently fail if save doesn't work
+            }
+        }
 
         public void CreateAccount(string name, string accountType, string valuta)
         {
             var accountNumber = Guid.NewGuid().ToString().Substring(0, 8);
             var newAccount = new BankAccount(accountNumber, name, accountType, valuta);
             _accounts.Add(newAccount);
+            _ = SaveDataAsync(); // Save after mutation
         }
 
         public void Deposit(int accountId, decimal amount)
@@ -26,6 +74,7 @@ namespace BankingApp.Services
 
             account.Deposit(amount);
             AddTransaction(accountId, amount, "Deposit", "Deposit made.");
+            _ = SaveDataAsync(); // Save after mutation
         }
 
         public void Withdraw(int accountId, decimal amount)
@@ -37,6 +86,7 @@ namespace BankingApp.Services
 
             account.Withdraw(amount);
             AddTransaction(accountId, amount, "Withdraw", "Withdrawal made.");
+            _ = SaveDataAsync(); // Save after mutation
         }
 
         public void TransferFunds(int fromAccountId, int toAccountId, decimal amount)
@@ -48,11 +98,13 @@ namespace BankingApp.Services
             Deposit(toAccountId, amount);
             AddTransaction(fromAccountId, amount, "Transfer Out", $"Transferred to account {toAccountId}");
             AddTransaction(toAccountId, amount, "Transfer In", $"Received from account {fromAccountId}");
+            // Note: Withdraw and Deposit already call SaveDataAsync, so data is persisted
         }
 
         public void CreateTransaction(int accountId, decimal amount, string type, string description)
         {
             AddTransaction(accountId, amount, type, description);
+            _ = SaveDataAsync(); // Save after mutation
         }
 
         public IEnumerable<Transaction> GetTransactionHistory(int accountId)

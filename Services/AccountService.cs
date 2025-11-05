@@ -118,6 +118,37 @@ namespace BankingApp.Services
             return _accounts.ToList();
         }
 
+        public void ApplyInterest(int accountId)
+        {
+            var account = GetAccountById(accountId);
+            if (account == null) throw new Exception("Account not found.");
+            
+            if (account.AccountType.ToLower() != "sparkonto")
+                throw new InvalidOperationException("Interest can only be applied to Sparkonto (savings) accounts.");
+
+            var interestAmount = account.CalculateInterest();
+            if (interestAmount > 0)
+            {
+                account.ApplyInterest();
+                AddTransaction(accountId, interestAmount, "Interest", $"Interest applied at {account.InterestRate}% annual rate");
+                _ = SaveDataAsync(); // Save after mutation
+            }
+        }
+
+        public void ApplyInterestToAllSavingsAccounts()
+        {
+            var savingsAccounts = _accounts.Where(a => a.AccountType.ToLower() == "sparkonto").ToList();
+            
+            foreach (var account in savingsAccounts)
+            {
+                var accountIndex = _accounts.IndexOf(account);
+                if (accountIndex >= 0)
+                {
+                    ApplyInterest(accountIndex);
+                }
+            }
+        }
+
         public IEnumerable<Transaction> FilterHistory(int accountId, DateTime? fromDate, DateTime? toDate, string? type)
         {
             var query = _transactions.Where(t => t.AccountId == accountId);

@@ -13,10 +13,9 @@ namespace BankingApp.Services
         void CreateTransaction(int accountId, decimal amount, string type, string description);
         IEnumerable<Transaction> GetTransactionHistory(int accountId);
         IEnumerable<BankingApp.Models.BankAccount> GetAccounts();
-    IEnumerable<Transaction> FilterHistory(int accountId, DateTime? fromDate, DateTime? toDate, string? type);
-    IEnumerable<Transaction> SortHistory(int accountId, string sortBy, bool ascending);
-       
-       
-
+        IEnumerable<Transaction> FilterHistory(int accountId, DateTime? fromDate, DateTime? toDate, string? type);
+        IEnumerable<Transaction> SortHistory(int accountId, string sortBy, bool ascending);
+        void ApplyInterest(int accountId);
+        void ApplyInterestToAllSavingsAccounts();
     }
 }

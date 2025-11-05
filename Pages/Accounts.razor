@@ -54,21 +54,57 @@
                 <th>Valuta</th>
                 <th>Saldo</th>
                 <th>Kontonummer</th>
+                <th>Ränta</th>
+                <th>Åtgärder</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var acc in accounts)
+            @for (int i = 0; i < accounts.Count; i++)
             {
+                var acc = accounts[i];
+                var accountIndex = i;
                 <tr>
                     <td>@acc.AccountName</td>
                     <td>@acc.AccountType</td>
                     <td>@acc.Valuta</td>
                     <td>@acc.Balance.ToString("N2")</td>
                     <td>@acc.AccountNumber</td>
+                    <td>
+                        @if (acc.AccountType.ToString().ToLower() == "sparkonto")
+                        {
+                            <span class="text-success">@((acc.InterestRate * 100).ToString("F2"))% årlig</span>
+                            <br /><small class="text-muted">Senast: @acc.LastInterestCalculation.ToString("yyyy-MM-dd")</small>
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </td>
+                    <td>
+                        @if (acc.AccountType.ToString().ToLower() == "sparkonto")
+                        {
+                            <button class="btn btn-sm btn-success" @onclick="() => ApplyInterest(accountIndex)">
+                                Beräkna ränta
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
+
+    <div class="d-flex justify-content-end mt-3">
+        <button class="btn btn-info me-2" @onclick="ApplyInterestToAll">
+            Beräkna ränta för alla sparkonton
+        </button>
+        <button class="btn btn-outline-secondary" @onclick="RefreshAccounts">
+            Uppdatera
+        </button>
+    </div>
 }
 else
 {
@@ -105,6 +141,37 @@ else
         selectedType = null;
         selectedCurrency = "SEK";
 
+        RefreshAccounts();
+    }
+
+    private void ApplyInterest(int accountNumber)
+    {
+        try
+        {
+            AccountService.ApplyInterest(accountNumber);
+            RefreshAccounts();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Fel vid ränteberäkning: {ex.Message}";
+        }
+    }
+
+    private void ApplyInterestToAll()
+    {
+        try
+        {
+            AccountService.ApplyInterestToAllSavingsAccounts();
+            RefreshAccounts();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Fel vid ränteberäkning: {ex.Message}";
+        }
+    }
+
+    private void RefreshAccounts()
+    {
         // Update table (would reload from service in real app)
         accounts = typeof(AccountService)
             .GetField("_accounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?

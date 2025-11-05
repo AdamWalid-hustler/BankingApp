@@ -1,7 +1,10 @@
 @page "/transactions"
 @using BankingApp.Models
 @using BankingApp.Services
+@using BankingApp.Components
 @inject IAccountService AccountService
+
+<AuthenticationRequired>
 
 <h3 class="mb-3">Ny transaktion</h3>
 
@@ -144,3 +147,4 @@ else
         amount = 0;
     }
 }
+</AuthenticationRequired>

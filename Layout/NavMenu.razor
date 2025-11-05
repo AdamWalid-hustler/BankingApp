@@ -27,10 +27,17 @@
             <NavLink class="nav-link" href="/history">
                 <span class="oi oi-transfer" aria-hidden="true"></span> Transaktions Historik
             </NavLink>
-
+        </div>
+        
+        <div class="nav-item px-3">
+            <button class="btn btn-link nav-link text-start w-100" @onclick="Logout">
+                <span class="oi oi-account-logout" aria-hidden="true"></span> Logout
+            </button>
         </div>
     </nav>
 </div>
+
+@inject BankingApp.Services.IAuthenticationService AuthService
 
 @code {
     private bool collapseNavMenu = true;
@@ -40,5 +47,10 @@
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void Logout()
+    {
+        AuthService.SetAuthenticated(false);
     }
 }

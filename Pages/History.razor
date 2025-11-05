@@ -1,7 +1,10 @@
 @page "/history"
 @using BankingApp.Models
 @using BankingApp.Services
+@using BankingApp.Components
 @inject IAccountService AccountService
+
+<AuthenticationRequired>
 
 <h3 class="mb-3">Transaktionshistorik</h3>
 
@@ -126,3 +129,4 @@ else
         transactions = AccountService.SortHistory(accId, sortBy, sortAscending);
     }
 }
+</AuthenticationRequired>

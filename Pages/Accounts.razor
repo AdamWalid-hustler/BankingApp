@@ -1,9 +1,11 @@
 @page "/accounts"
 @using BankingApp.Models
 @using BankingApp.Services
+@using BankingApp.Components
 @inject IAccountService AccountService
 
-<h3 class="mb-3">Bankkonton</h3>
+<AuthenticationRequired>
+    <h3 class="mb-3">Bankkonton</h3>
 
 <div class="card p-3 mb-4 shadow-sm">
     <h5>Skapa nytt konto</h5>
@@ -109,3 +111,4 @@ else
             .GetValue(AccountService) as List<BankAccount> ?? new List<BankAccount>();
     }
 }
+</AuthenticationRequired>

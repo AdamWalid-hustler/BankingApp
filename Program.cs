@@ -10,6 +10,8 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // new code
 builder.Services.AddScoped<IStorageService, LocalStorageService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IPinService, PinService>();
+builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using BankingApp.Models;
 
@@ -195,6 +196,63 @@ namespace BankingApp.Services
                 description
             );
             _transactions.Add(transaction);
+        }
+
+        public string ExportData()
+        {
+            var exportData = new
+            {
+                Accounts = _accounts,
+                Transactions = _transactions,
+                ExportDate = DateTime.Now,
+                Version = "1.0"
+            };
+
+            return JsonSerializer.Serialize(exportData, new JsonSerializerOptions 
+            { 
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+        }
+
+        public async Task ImportData(string jsonData)
+        {
+            try
+            {
+                using var document = JsonDocument.Parse(jsonData);
+                var root = document.RootElement;
+
+                if (root.TryGetProperty("accounts", out var accountsElement))
+                {
+                    var importedAccounts = JsonSerializer.Deserialize<List<BankAccount>>(accountsElement.GetRawText());
+                    if (importedAccounts != null)
+                    {
+                        _accounts.Clear();
+                        _accounts.AddRange(importedAccounts);
+                    }
+                }
+
+                if (root.TryGetProperty("transactions", out var transactionsElement))
+                {
+                    var importedTransactions = JsonSerializer.Deserialize<List<Transaction>>(transactionsElement.GetRawText());
+                    if (importedTransactions != null)
+                    {
+                        _transactions.Clear();
+                        _transactions.AddRange(importedTransactions);
+                    }
+                }
+
+                // Save the imported data to localStorage
+                await SaveDataAsync();
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidOperationException($"Invalid JSON format: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to import data: {ex.Message}");
+            }
         }
     }
 }

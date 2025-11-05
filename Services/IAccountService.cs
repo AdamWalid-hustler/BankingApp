@@ -17,5 +17,7 @@ namespace BankingApp.Services
         IEnumerable<Transaction> SortHistory(int accountId, string sortBy, bool ascending);
         void ApplyInterest(int accountId);
         void ApplyInterestToAllSavingsAccounts();
+        string ExportData();
+        Task ImportData(string jsonData);
     }
 }

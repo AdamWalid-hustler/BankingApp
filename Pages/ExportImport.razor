@@ -1,0 +1,228 @@
+@page "/export-import"
+@using BankingApp.Models
+@using BankingApp.Services
+@using BankingApp.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@inject IAccountService AccountService
+@inject IJSRuntime JSRuntime
+
+<AuthenticationRequired>
+    <h3 class="mb-3">💾 Export/Import Data</h3>
+
+    <div class="row">
+        <!-- Export Section -->
+        <div class="col-md-6">
+            <div class="card p-4 mb-4 shadow-sm">
+                <h5 class="card-title text-success">📤 Export Data</h5>
+                <p class="card-text text-muted">
+                    Ladda ner alla dina konton och transaktioner som en JSON-fil. 
+                    Detta skapar en säkerhetskopia av all din bankdata.
+                </p>
+                
+                <button class="btn btn-success" @onclick="ExportData" disabled="@isExporting">
+                    @if (isExporting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        <text>Exporterar...</text>
+                    }
+                    else
+                    {
+                        <i class="bi bi-download me-2"></i>
+                        <text>Exportera data</text>
+                    }
+                </button>
+
+                @if (!string.IsNullOrEmpty(exportMessage))
+                {
+                    <div class="alert alert-info mt-3">
+                        @exportMessage
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Import Section -->
+        <div class="col-md-6">
+            <div class="card p-4 mb-4 shadow-sm">
+                <h5 class="card-title text-primary">📥 Import Data</h5>
+                <p class="card-text text-muted">
+                    Återställ dina konton och transaktioner från en tidigare exporterad JSON-fil. 
+                    Detta kommer att ersätta all befintlig data.
+                </p>
+
+                <div class="mb-3">
+                    <InputFile OnChange="HandleFileSelection" class="form-control" accept=".json" />
+                </div>
+
+                <button class="btn btn-primary" @onclick="ImportData" disabled="@(selectedFile == null || isImporting)">
+                    @if (isImporting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        <text>Importerar...</text>
+                    }
+                    else
+                    {
+                        <i class="bi bi-upload me-2"></i>
+                        <text>Importera data</text>
+                    }
+                </button>
+
+                @if (!string.IsNullOrEmpty(importMessage))
+                {
+                    <div class="alert @(importSuccess ? "alert-success" : "alert-danger") mt-3">
+                        @importMessage
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Overview -->
+    <div class="card p-4 shadow-sm">
+        <h5 class="card-title">📊 Nuvarande data</h5>
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded">
+                    <h4 class="text-primary">@accountCount</h4>
+                    <small class="text-muted">Konton</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded">
+                    <h4 class="text-success">@transactionCount</h4>
+                    <small class="text-muted">Transaktioner</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded">
+                    <h4 class="text-info">@totalBalance.ToString("N2")</h4>
+                    <small class="text-muted">Total balans (SEK)</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded">
+                    <h4 class="text-warning">@sparkontCount</h4>
+                    <small class="text-muted">Sparkonton</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-3 text-center">
+            <button class="btn btn-outline-secondary btn-sm" @onclick="RefreshStats">
+                <i class="bi bi-arrow-clockwise"></i> Uppdatera statistik
+            </button>
+        </div>
+    </div>
+
+    <!-- Warning -->
+    <div class="alert alert-warning mt-4">
+        <strong>⚠️ Varning:</strong> Import av data kommer att ersätta all befintlig data. 
+        Se till att exportera din nuvarande data först om du vill behålla den.
+    </div>
+</AuthenticationRequired>
+
+@code {
+    private IBrowserFile? selectedFile;
+    private bool isExporting = false;
+    private bool isImporting = false;
+    private string exportMessage = string.Empty;
+    private string importMessage = string.Empty;
+    private bool importSuccess = false;
+    
+    // Statistics
+    private int accountCount = 0;
+    private int transactionCount = 0;
+    private decimal totalBalance = 0;
+    private int sparkontCount = 0;
+
+    protected override void OnInitialized()
+    {
+        RefreshStats();
+    }
+
+    private async Task ExportData()
+    {
+        isExporting = true;
+        exportMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var jsonData = AccountService.ExportData();
+            var fileName = $"banking_data_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+            
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, "application/json", jsonData);
+            exportMessage = $"✅ Data exporterad framgångsrikt som {fileName}";
+        }
+        catch (Exception ex)
+        {
+            exportMessage = $"❌ Fel vid export: {ex.Message}";
+        }
+        finally
+        {
+            isExporting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleFileSelection(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        importMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task ImportData()
+    {
+        if (selectedFile == null) return;
+
+        isImporting = true;
+        importMessage = string.Empty;
+        importSuccess = false;
+        StateHasChanged();
+
+        try
+        {
+            using var stream = selectedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB max
+            using var reader = new StreamReader(stream);
+            var jsonContent = await reader.ReadToEndAsync();
+
+            await AccountService.ImportData(jsonContent);
+            
+            importMessage = "✅ Data importerad framgångsrikt! Alla konton och transaktioner har återställts.";
+            importSuccess = true;
+            
+            // Refresh statistics after import
+            RefreshStats();
+        }
+        catch (Exception ex)
+        {
+            importMessage = $"❌ Fel vid import: {ex.Message}";
+            importSuccess = false;
+        }
+        finally
+        {
+            isImporting = false;
+            selectedFile = null;
+            StateHasChanged();
+        }
+    }
+
+    private void RefreshStats()
+    {
+        var accounts = AccountService.GetAccounts().ToList();
+        accountCount = accounts.Count;
+        totalBalance = accounts.Sum(a => a.Balance);
+        sparkontCount = accounts.Count(a => a.AccountType.ToLower() == "sparkonto");
+
+        // Count total transactions across all accounts
+        transactionCount = 0;
+        for (int i = 0; i < accountCount; i++)
+        {
+            transactionCount += AccountService.GetTransactionHistory(i).Count();
+        }
+        
+        StateHasChanged();
+    }
+}

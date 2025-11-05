@@ -40,7 +40,16 @@ A simple banking system built with **Blazor WebAssembly** that allows users to c
 
 1. Clone the repository:
    bash
-   git clone https://github.com/
+   git clone: github.com/AdamWalid-hustler/BankingApp.git
 
+2. Navigate into the project
+   cd BankingApp
+
+3. Run
+   dotnet run
+
+4. Use the following address
+   
+   http://localhost:5154
 
 

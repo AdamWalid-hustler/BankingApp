@@ -23,3 +23,24 @@ A simple banking system built with **Blazor WebAssembly** that allows users to c
 
 ## 🧠 Architecture Overview
 
+
+
+---
+
+## ⚙️ Technologies Used
+- **.NET 8 Blazor WebAssembly**
+- **C#**
+- **Bootstrap 5**
+- **LocalStorage (via IJSRuntime)**
+- **JSON Serialization (System.Text.Json)**
+
+---
+
+## 🧪 How to Run
+
+1. Clone the repository:
+   bash
+   git clone https://github.com/
+
+
+

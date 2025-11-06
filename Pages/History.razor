@@ -1,0 +1,132 @@
+@page "/history"
+@using BankingApp.Models
+@using BankingApp.Services
+@using BankingApp.Components
+@inject IAccountService AccountService
+
+<AuthenticationRequired>
+
+<h3 class="mb-3">Transaktionshistorik</h3>
+
+@if (accounts.Count == 0)
+{
+    <p class="text-muted fst-italic">Inga konton hittades. Skapa ett konto först.</p>
+}
+else
+{
+    <div class="card p-3 shadow-sm mb-4">
+        <h5>Filtrera historik</h5>
+
+        <div class="row g-2">
+            <div class="col-md-4">
+                <label class="form-label">Konto</label>
+                <select class="form-select" @bind="selectedAccountId">
+                    <option value="">-- Välj konto --</option>
+                    @for (int i = 0; i < accounts.Count; i++)
+                    {
+                        <option value="@i">@accounts[i].AccountName</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Typ</label>
+                <select class="form-select" @bind="selectedType">
+                    <option value="">Alla</option>
+                    <option value="Deposit">Insättning</option>
+                    <option value="Withdraw">Uttag</option>
+                    <option value="Transfer In">Överföring in</option>
+                    <option value="Transfer Out">Överföring ut</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Från datum</label>
+                <input type="date" class="form-control" @bind="fromDate" />
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Till datum</label>
+                <input type="date" class="form-control" @bind="toDate" />
+            </div>
+
+            <div class="col-md-1 d-grid">
+                <button class="btn btn-primary mt-4" @onclick="ApplyFilter">Filtrera</button>
+            </div>
+        </div>
+    </div>
+
+    @if (transactions.Any())
+    {
+        <table class="table table-striped table-hover shadow-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>
+                        <button class="btn btn-link p-0" @onclick='() => SortBy("date")'>Datum</button>
+                    </th>
+                    <th>Typ</th>
+                    <th>
+                        <button class="btn btn-link p-0" @onclick='() => SortBy("amount")'>Belopp</button>
+                    </th>
+                    <th>Saldo efter</th>
+                    <th>Beskrivning</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in transactions)
+                {
+                    <tr>
+                        <td>@t.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@t.Type</td>
+                        <td>@t.Amount.ToString("N2")</td>
+                        <td>@t.BalanceAfter.ToString("N2")</td>
+                        <td>@t.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else if (selectedAccountId is not null)
+    {
+        <p class="text-muted fst-italic">Inga transaktioner hittades för detta konto.</p>
+    }
+}
+
+@code {
+    private List<BankAccount> accounts = new();
+    private IEnumerable<Transaction> transactions = new List<Transaction>();
+    private string? selectedAccountId;
+    private string? selectedType;
+    private DateTime? fromDate;
+    private DateTime? toDate;
+    private bool sortAscending = true;
+
+    protected override void OnInitialized()
+    {
+        accounts = typeof(AccountService)
+            .GetField("_accounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+            .GetValue(AccountService) as List<BankAccount> ?? new List<BankAccount>();
+    }
+
+    private void ApplyFilter()
+    {
+        if (string.IsNullOrEmpty(selectedAccountId))
+        {
+            transactions = new List<Transaction>();
+            return;
+        }
+
+        int accId = int.Parse(selectedAccountId);
+        transactions = AccountService.FilterHistory(accId, fromDate, toDate, selectedType);
+    }
+
+    private void SortBy(string sortBy)
+    {
+        if (string.IsNullOrEmpty(selectedAccountId)) return;
+
+        int accId = int.Parse(selectedAccountId);
+        sortAscending = !sortAscending;
+        transactions = AccountService.SortHistory(accId, sortBy, sortAscending);
+    }
+}
+</AuthenticationRequired>

@@ -1,0 +1,220 @@
+@page "/pin"
+@inject BankingApp.Services.IPinService PinService
+@inject BankingApp.Services.IAuthenticationService AuthService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@using Microsoft.JSInterop
+@using System.ComponentModel.DataAnnotations
+
+<div class="container-fluid d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow-lg" style="width: 400px;">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <h3 class="card-title mb-3">
+                    <i class="bi bi-shield-lock me-2"></i>
+                    @(isSetupMode ? "Setup PIN" : "Enter PIN")
+                </h3>
+                <p class="text-muted">
+                    @(isSetupMode ? "Create a 4-digit PIN to secure your banking app" : "Enter your 4-digit PIN to access your accounts")
+                </p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success" role="alert">
+                    @successMessage
+                </div>
+            }
+
+            <div class="mb-4">
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        int index = i;
+                        <input type="password" 
+                               class="form-control text-center pin-input" 
+                               style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;"
+                               maxlength="1"
+                               @bind="pinDigits[index]"
+                               @onkeyup="@(async (e) => await HandleKeyUp(e, index))"
+                               @ref="pinInputs[index]" />
+                    }
+                </div>
+
+                @if (isSetupMode)
+                {
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <label class="form-label w-100 text-center">Confirm PIN:</label>
+                    </div>
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        @for (int i = 0; i < 4; i++)
+                        {
+                            int index = i;
+                            <input type="password" 
+                                   class="form-control text-center pin-input" 
+                                   style="width: 60px; height: 60px; font-size: 24px; font-weight: bold;"
+                                   maxlength="1"
+                                   @bind="confirmPinDigits[index]"
+                                   @onkeyup="@(async (e) => await HandleConfirmKeyUp(e, index))"
+                                   @ref="confirmPinInputs[index]" />
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary btn-lg" @onclick="HandleSubmit" disabled="@isSubmitting">
+                    @if (isSubmitting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    @(isSetupMode ? "Set PIN" : "Unlock")
+                </button>
+
+                @if (!isSetupMode)
+                {
+                    <button class="btn btn-outline-secondary" @onclick="ResetPin">
+                        Reset PIN
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string[] pinDigits = new string[4];
+    private string[] confirmPinDigits = new string[4];
+    private ElementReference[] pinInputs = new ElementReference[4];
+    private ElementReference[] confirmPinInputs = new ElementReference[4];
+    private bool isSetupMode = false;
+    private bool isSubmitting = false;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isSetupMode = !await PinService.HasPinAsync();
+    }
+
+    private async Task HandleKeyUp(KeyboardEventArgs e, int index)
+    {
+        if (e.Key == "Backspace" && string.IsNullOrEmpty(pinDigits[index]) && index > 0)
+        {
+            await pinInputs[index - 1].FocusAsync();
+        }
+        else if (!string.IsNullOrEmpty(pinDigits[index]) && index < 3)
+        {
+            await pinInputs[index + 1].FocusAsync();
+        }
+        else if (!string.IsNullOrEmpty(pinDigits[index]) && index == 3 && !isSetupMode)
+        {
+            await HandleSubmit();
+        }
+    }
+
+    private async Task HandleConfirmKeyUp(KeyboardEventArgs e, int index)
+    {
+        if (e.Key == "Backspace" && string.IsNullOrEmpty(confirmPinDigits[index]) && index > 0)
+        {
+            await confirmPinInputs[index - 1].FocusAsync();
+        }
+        else if (!string.IsNullOrEmpty(confirmPinDigits[index]) && index < 3)
+        {
+            await confirmPinInputs[index + 1].FocusAsync();
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+        isSubmitting = true;
+
+        try
+        {
+            var pin = string.Join("", pinDigits);
+            
+            if (pin.Length != 4 || !pin.All(char.IsDigit))
+            {
+                errorMessage = "Please enter a valid 4-digit PIN";
+                return;
+            }
+
+            if (isSetupMode)
+            {
+                var confirmPin = string.Join("", confirmPinDigits);
+                
+                if (confirmPin.Length != 4 || !confirmPin.All(char.IsDigit))
+                {
+                    errorMessage = "Please confirm your 4-digit PIN";
+                    return;
+                }
+
+                if (pin != confirmPin)
+                {
+                    errorMessage = "PINs do not match. Please try again.";
+                    ClearInputs();
+                    return;
+                }
+
+                await PinService.SetPinAsync(pin);
+                successMessage = "PIN set successfully!";
+                await Task.Delay(1000); // Show success message briefly
+                
+                AuthService.SetAuthenticated(true);
+                Navigation.NavigateTo("/accounts");
+            }
+            else
+            {
+                var isValid = await PinService.ValidatePinAsync(pin);
+                
+                if (isValid)
+                {
+                    AuthService.SetAuthenticated(true);
+                    Navigation.NavigateTo("/accounts");
+                }
+                else
+                {
+                    errorMessage = "Invalid PIN. Please try again.";
+                    ClearInputs();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task ResetPin()
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to reset your PIN? This will clear all your data.");
+        if (confirmed)
+        {
+            await PinService.ClearPinAsync();
+            isSetupMode = true;
+            ClearInputs();
+            errorMessage = string.Empty;
+            successMessage = "PIN reset. Please set a new PIN.";
+        }
+    }
+
+    private void ClearInputs()
+    {
+        pinDigits = new string[4];
+        confirmPinDigits = new string[4];
+        StateHasChanged();
+    }
+}

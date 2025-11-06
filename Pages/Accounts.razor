@@ -1,0 +1,181 @@
+@page "/accounts"
+@using BankingApp.Models
+@using BankingApp.Services
+@using BankingApp.Components
+@inject IAccountService AccountService
+
+<AuthenticationRequired>
+    <h3 class="mb-3">Bankkonton</h3>
+
+<div class="card p-3 mb-4 shadow-sm">
+    <h5>Skapa nytt konto</h5>
+
+    <div class="row g-2">
+        <div class="col-md-4">
+            <input @bind="newAccountName" class="form-control" placeholder="Kontonamn" />
+        </div>
+
+        <div class="col-md-3">
+            <select @bind="selectedType" class="form-select">
+                <option value="">-- Välj kontotyp --</option>
+                @foreach (var type in Enum.GetValues<AccountType>())
+                {
+                    <option value="@type">@type</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <select @bind="selectedCurrency" class="form-select">
+                <option value="SEK">SEK</option>
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <button class="btn btn-primary w-100" @onclick="CreateAccount">Skapa konto</button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="text-danger mt-2">@errorMessage</div>
+    }
+</div>
+
+@if (accounts.Any())
+{
+    <table class="table table-striped table-hover shadow-sm">
+        <thead class="table-light">
+            <tr>
+                <th>Kontonamn</th>
+                <th>Typ</th>
+                <th>Valuta</th>
+                <th>Saldo</th>
+                <th>Kontonummer</th>
+                <th>Ränta</th>
+                <th>Åtgärder</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < accounts.Count; i++)
+            {
+                var acc = accounts[i];
+                var accountIndex = i;
+                <tr>
+                    <td>@acc.AccountName</td>
+                    <td>@acc.AccountType</td>
+                    <td>@acc.Valuta</td>
+                    <td>@acc.Balance.ToString("N2")</td>
+                    <td>@acc.AccountNumber</td>
+                    <td>
+                        @if (acc.AccountType.ToString().ToLower() == "sparkonto")
+                        {
+                            <span class="text-success">@((acc.InterestRate * 100).ToString("F2"))% årlig</span>
+                            <br /><small class="text-muted">Senast: @acc.LastInterestCalculation.ToString("yyyy-MM-dd")</small>
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </td>
+                    <td>
+                        @if (acc.AccountType.ToString().ToLower() == "sparkonto")
+                        {
+                            <button class="btn btn-sm btn-success" @onclick="() => ApplyInterest(accountIndex)">
+                                Beräkna ränta
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-end mt-3">
+        <button class="btn btn-info me-2" @onclick="ApplyInterestToAll">
+            Beräkna ränta för alla sparkonton
+        </button>
+        <button class="btn btn-outline-secondary" @onclick="RefreshAccounts">
+            Uppdatera
+        </button>
+    </div>
+}
+else
+{
+    <p class="text-muted fst-italic">Inga konton skapade ännu.</p>
+}
+
+@code {
+    private List<BankAccount> accounts = new();
+    private string newAccountName = string.Empty;
+    private string selectedCurrency = "SEK";
+    private AccountType? selectedType;
+    private string errorMessage = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        // Try to fetch existing accounts from AccountService
+        accounts = typeof(AccountService)
+            .GetField("_accounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+            .GetValue(AccountService) as List<BankAccount> ?? new List<BankAccount>();
+    }
+
+    private void CreateAccount()
+    {
+        errorMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(newAccountName) || selectedType is null)
+        {
+            errorMessage = "Vänligen fyll i alla fält.";
+            return;
+        }
+
+        AccountService.CreateAccount(newAccountName, selectedType.ToString()!, selectedCurrency);
+        newAccountName = string.Empty;
+        selectedType = null;
+        selectedCurrency = "SEK";
+
+        RefreshAccounts();
+    }
+
+    private void ApplyInterest(int accountNumber)
+    {
+        try
+        {
+            AccountService.ApplyInterest(accountNumber);
+            RefreshAccounts();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Fel vid ränteberäkning: {ex.Message}";
+        }
+    }
+
+    private void ApplyInterestToAll()
+    {
+        try
+        {
+            AccountService.ApplyInterestToAllSavingsAccounts();
+            RefreshAccounts();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Fel vid ränteberäkning: {ex.Message}";
+        }
+    }
+
+    private void RefreshAccounts()
+    {
+        // Update table (would reload from service in real app)
+        accounts = typeof(AccountService)
+            .GetField("_accounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+            .GetValue(AccountService) as List<BankAccount> ?? new List<BankAccount>();
+    }
+}
+</AuthenticationRequired>

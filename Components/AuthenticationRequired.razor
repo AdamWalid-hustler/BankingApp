@@ -1,0 +1,37 @@
+@inject BankingApp.Services.IAuthenticationService AuthService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+@if (AuthService.IsAuthenticated)
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        AuthService.AuthenticationChanged += OnAuthenticationChanged;
+        
+        // Redirect to PIN entry if not authenticated
+        if (!AuthService.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/pin");
+        }
+    }
+
+    private void OnAuthenticationChanged(object? sender, bool isAuthenticated)
+    {
+        if (!isAuthenticated)
+        {
+            Navigation.NavigateTo("/pin");
+        }
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        AuthService.AuthenticationChanged -= OnAuthenticationChanged;
+    }
+}

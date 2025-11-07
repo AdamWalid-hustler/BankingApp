@@ -249,4 +249,30 @@ If you encounter any issues or have questions:
 
 ---
 
+<<<<<<< HEAD
 **⭐ If you found this project helpful, please give it a star!**
+=======
+## 🧠 Architecture Overview
+
+
+
+---
+
+## ⚙️ Technologies Used
+- **.NET 8 Blazor WebAssembly**
+- **C#**
+- **Bootstrap 5**
+- **LocalStorage (via IJSRuntime)**
+- **JSON Serialization (System.Text.Json)**
+
+---
+
+## 🧪 How to Run
+
+1. Clone the repository:
+   bash
+   git clone [https://github.com/](https://github.com/AdamWalid-hustler/BankingApp)
+
+
+
+>>>>>>> 3bfe6768876ebd4fd47acafa1888e79574a3bbf1

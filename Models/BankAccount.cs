@@ -45,14 +45,21 @@ namespace BankingApp.Models
             if (InterestRate <= 0 || Balance <= 0)
                 return 0;
 
-            // Calculate days since last interest calculation
-            var daysSinceLastCalculation = (DateTime.Now - LastInterestCalculation).Days;
+            // FOR TESTING: Calculate seconds since last interest calculation (instead of days)
+            var secondsSinceLastCalculation = (DateTime.Now - LastInterestCalculation).TotalSeconds;
+            
+            // Skip if less than 5 seconds have passed
+            if (secondsSinceLastCalculation < 5)
+                return 0;
+            
+            // Convert seconds to "virtual days" for testing (5 seconds = 1 day)
+            var virtualDays = secondsSinceLastCalculation / 5.0;
             
             // Daily interest rate (annual rate / 365)
             var dailyRate = InterestRate / 100 / 365;
             
-            // Calculate compound daily interest
-            var interestAmount = Balance * (decimal)Math.Pow((double)(1 + dailyRate), daysSinceLastCalculation) - Balance;
+            // Calculate compound daily interest using virtual days
+            var interestAmount = Balance * (decimal)Math.Pow((double)(1 + dailyRate), virtualDays) - Balance;
             
             return Math.Round(interestAmount, 2);
         }

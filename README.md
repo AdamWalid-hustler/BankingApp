@@ -32,6 +32,7 @@ A modern, secure personal banking application built with **Blazor WebAssembly** 
 - **Compound Daily Interest**: Professional banking calculations
 - **Interest History**: Track all interest payments
 - **Bulk Processing**: Apply interest to all savings accounts
+- **⚡ Testing Mode**: Accelerated interest calculation (5 seconds = 1 day) for development
 
 ### 💾 Data Management
 - **Export/Import**: Complete data backup as JSON files
@@ -40,10 +41,12 @@ A modern, secure personal banking application built with **Blazor WebAssembly** 
 - **Data Validation**: Error handling for import operations
 
 ### 🎨 User Interface
+- **Enhanced Icons**: Intuitive navigation with emojis and Open Iconic icons
 - **Responsive Design**: Works on desktop and mobile
 - **Swedish Language**: Complete Swedish localization
 - **Bootstrap UI**: Modern, professional interface
 - **Real-time Updates**: Dynamic UI updates without page refresh
+- **Visual Feedback**: Loading states, success/error messages, and progress indicators
 
 ## 🚀 Getting Started
 
@@ -89,27 +92,45 @@ A modern, secure personal banking application built with **Blazor WebAssembly** 
 
 #### 🏠 **Dashboard/Accounts Page**
 - View all your accounts with balances
+#### 🏠 **Dashboard/Accounts Page** (Main Page)
+- View all your accounts with balances and interest rates
 - Create new accounts (Lönekonto or Sparkonto)
-- Apply interest to savings accounts
-- Monitor interest rates and calculation dates
+- Apply interest to savings accounts individually or in bulk
+- Monitor interest rates and calculation dates with real-time updates
+- **⚡ Testing Mode Indicator**: Shows accelerated interest calculation status
 
 #### 💸 **New Transaction Page**
 - Make deposits to any account
 - Withdraw money from accounts
 - Transfer funds between accounts
-- All transactions are logged automatically
+- All transactions are logged automatically with timestamps
 
 #### 📊 **Transaction History**
-- View complete transaction history
+- View complete transaction history with enhanced filtering
 - Filter by date range and transaction type
 - Sort transactions by various criteria
-- Track all deposits, withdrawals, transfers, and interest
+- Track all deposits, withdrawals, transfers, and interest payments
 
-#### � **Export/Import Data**
-- **Export**: Download all your data as a JSON backup file
-- **Import**: Restore data from a previous backup
-- **Statistics**: View account and transaction summaries
-- **Data Safety**: Warning system for data operations
+#### 💾 **Export/Import Data**
+- **Export**: Download all your data as a JSON backup file with timestamps
+- **Import**: Restore data from a previous backup with validation
+- **Statistics**: Real-time overview of account and transaction summaries
+- **Data Safety**: Warning system and error handling for data operations
+
+### 🎯 Enhanced Navigation
+The application features an intuitive navigation system with:
+- **🏦 Brand**: Enhanced app branding with banking icon
+- **🏠 Konton**: Main dashboard (accounts overview)
+- **💸 Ny transaktion**: Create new transactions
+- **📊 Transaktions Historik**: View transaction history
+- **💾 Export/Import**: Data backup and restore
+- **🔓 Logout**: Secure session termination
+
+### ⚡ Testing Features
+For development and demonstration purposes:
+- **Accelerated Interest**: 5-second intervals instead of daily calculations
+- **Real-time Updates**: Automatic page refresh to show interest accumulation
+- **Visual Indicators**: Clear testing mode warnings and status displays
 
 ## 🏗️ Project Structure
 
@@ -178,22 +199,30 @@ BankingApp/
 Savings accounts (Sparkonto) automatically earn 2.5% annual interest:
 - **Formula**: `newBalance = balance × (1 + annualRate/365)^days`
 - **Compounding**: Daily compound interest
-- **Tracking**: Last calculation date stored
+- **Tracking**: Last calculation date and time stored
 - **Automation**: Bulk interest application available
+- **⚡ Testing Mode**: Accelerated calculation (5 seconds = 1 virtual day)
+
+### Enhanced User Experience
+- **Intuitive Navigation**: Clear icons and emojis for each section
+- **Real-time Updates**: Live balance and transaction updates
+- **Visual Feedback**: Success/error messages, loading states
+- **Responsive Design**: Optimal viewing on all devices
+- **Swedish Localization**: Complete Swedish language interface
 
 ### Data Persistence
 All data is stored locally in your browser:
-- **Accounts**: Complete account information
-- **Transactions**: Full transaction history
+- **Accounts**: Complete account information with interest tracking
+- **Transactions**: Full transaction history with timestamps
 - **Settings**: PIN and authentication state
-- **Export**: Backup to JSON files
-- **Import**: Restore from backup files
+- **Export**: Timestamped backup to JSON files
+- **Import**: Validated restore from backup files
 
 ### Security Features
 - **PIN Protection**: 4-digit PIN with SHA256 hashing
 - **Session Management**: Automatic logout capability
 - **Route Guards**: Protected banking pages
-- **Data Validation**: Input validation and error handling
+- **Data Validation**: Comprehensive input validation and error handling
 
 ## 🔒 Security Considerations
 
@@ -222,6 +251,24 @@ All data is stored locally in your browser:
 - [ ] Mobile app with Xamarin or MAUI
 - [ ] Dark mode theme support
 - [ ] Multi-language support (English, etc.)
+- [ ] Advanced interest calculation options
+- [ ] Account performance analytics and charts
+
+## 🆕 Recent Updates
+
+### Version 2.0 Features
+- **✅ Enhanced Navigation**: Intuitive icons with emojis for better UX
+- **✅ Testing Mode**: Accelerated interest calculation for development
+- **✅ Real-time Updates**: Live page refresh for immediate feedback
+- **✅ Visual Improvements**: Enhanced branding and professional icons
+- **✅ Better Feedback**: Comprehensive status messages and indicators
+
+### Version 1.0 Features
+- ✅ Complete banking functionality (accounts, transactions, history)
+- ✅ PIN-based security system
+- ✅ Interest calculation for savings accounts
+- ✅ Export/Import data functionality
+- ✅ Responsive Swedish interface
 
 ## 📄 License
 
